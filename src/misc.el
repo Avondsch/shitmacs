@@ -80,19 +80,89 @@
 
 ;;vterm
 (use-package vterm
-:straight t
- :commands vterm
- :bind
- (("<leader> t o" . vterm)) 
+    :straight t
+    :commands vterm
+    :bind
+    (("<leader> t o" . vterm)) 
 
- :config
-  ;; Set the maximum scrollback buffer size (adjust as needed)
-  (setq vterm-max-scrollback 10000)
+    :config
+    ;; Set the maximum scrollback buffer size (adjust as needed)
+    (setq vterm-max-scrollback 10000)
 
-  ;; Set the font size and face for vterm
-  (custom-set-faces
-   '(vterm ((t (:inherit default :family "Scientifica" :height 90))))))
-  (custom-set-faces '(vterm-buffer-name ((t (:foreground "white" :background "black" :left-margin 8 :right-margin 8)))))
+    ;; Set the font size and face for vterm
+    (custom-set-faces
+     '(vterm ((t (:inherit default :family "Scientifica" :height 90))))))
+(custom-set-faces '(vterm-buffer-name ((t (:foreground "white" :background "black" :left-margin 8 :right-margin 8)))))
 
-;;smooth scrolling
+;;mu4e
 
+
+(use-package mu4e
+    :ensure nil
+    :load-path "/usr/share/emacs/site-lisp/mu4e/"
+    :commands (mu4e mu4e-compose-new)
+    :init
+    (setq mail-user-agent 'mu4e-user-agent
+          mu4e-maildir "~/Maildir"
+          mu4e-get-mail-command "mbsync -a")
+    :config
+    ;; SMTP configuration for sending emails
+    (setq message-send-mail-function 'smtpmail-send-it
+          smtpmail-smtp-server "smtp.office365.com"
+          smtpmail-smtp-service 587
+          smtpmail-stream-type 'starttls
+          smtpmail-debug-info t)
+
+    ;; Set default identity
+    (setq mu4e-compose-signature "Muhil Sathish Kumar"
+          mu4e-compose-format-flowed t
+          mu4e-compose-dont-reply-to-self t)
+
+    ;; Custom mail directories
+    (setq mu4e-drafts-folder "/Drafts"
+          mu4e-sent-folder   "/Sent Items"
+          mu4e-trash-folder  "/Deleted Items"
+          mu4e-refile-folder "/Archive")
+
+    ;; Use fancy icons in mu4e
+    (setq mu4e-use-fancy-chars t)
+
+    ;; Enable HTML rendering
+    (setq mu4e-view-html-plaintext-ratio-heuristic 20
+          mu4e-html2text-command "w3m -dump -T text/html")
+
+    ;; Configure bookmarks for quick access
+    (setq mu4e-bookmarks
+          '(("flag:unread AND NOT flag:trashed" "Unread messages" ?u)
+            ("date:today..now" "Today's messages" ?t)
+            ("date:7d..now" "Last 7 days" ?w)))
+
+    ;; Open attachments with external programs
+    (setq mu4e-view-attach-viewer (quote (find-file)))
+
+    ;; Enable context-based completion for email addresses
+    (setq mu4e-completing-read-function 'completing-read))
+
+;; Keybindings for mu4e
+(global-set-key (kbd "<leader> m m") 'mu4e)
+(global-set-key (kbd "<leader> m c") 'mu4e-compose-new)
+
+
+(use-package mbsync
+    :straight t
+    :commands (mbsync)
+    :init
+    (setq mbsync-accounts
+          '(("outlook"
+             (mu4e-account-alist
+              (user-mail-address "Avondsch.muhilsk@hotmail.com")
+              (mu4e-sent-folder "/Sent Items")
+              (mu4e-drafts-folder "/Drafts")
+              (mu4e-trash-folder "/Deleted Items")
+              (mu4e-refile-folder "/Archive")
+              (mu4e-get-mail-command "mbsync outlook")
+              (mu4e-compose-signature "Muhil Sathish Kumar")
+              (smtpmail-smtp-server "smtp.office365.com")
+              (smtpmail-smtp-service 587)
+              (smtpmail-stream-type starttls)
+              (smtpmail-debug-info t))))))

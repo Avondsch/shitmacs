@@ -9,23 +9,23 @@
 
 ;; Ivy, and Company mode
 (use-package ivy
-:straight t
-  :diminish
-  :bind (("C-s" . swiper)
-         :map ivy-minibuffer-map
-         ("TAB" . ivy-alt-done)
-         ("C-l" . ivy-alt-done)
-         ("C-j" . ivy-next-line)
-         ("C-k" . ivy-previous-line)
-         :map ivy-switch-buffer-map
-         ("C-k" . ivy-previous-line)
-         ("C-l" . ivy-done)
-         ("C-d" . ivy-switch-buffer-kill)
-         :map ivy-reverse-i-search-map
-         ("C-k" . ivy-previous-line)
-         ("C-d" . ivy-reverse-i-search-kill))
-  :config
-  (ivy-mode 1))
+    :straight t
+    :diminish
+    :bind (("C-s" . swiper)
+           :map ivy-minibuffer-map
+           ("TAB" . ivy-alt-done)
+           ("C-l" . ivy-alt-done)
+           ("C-j" . ivy-next-line)
+           ("C-k" . ivy-previous-line)
+           :map ivy-switch-buffer-map
+           ("C-k" . ivy-previous-line)
+           ("C-l" . ivy-done)
+           ("C-d" . ivy-switch-buffer-kill)
+           :map ivy-reverse-i-search-map
+           ("C-k" . ivy-previous-line)
+           ("C-d" . ivy-reverse-i-search-kill))
+    :config
+    (ivy-mode 1))
 
 (use-package ivy-rich
 :straight t
@@ -117,32 +117,32 @@
 ;;lsp-mode, company, tree-sitter and language specific configs.
 
 (use-package lsp-mode
-  :straight t
-  :commands lsp
-  :config
-  ;; Set up LSP server executables
-  (setq lsp-clients-java-server-executable "<jdt-language-server>")
- ;; (setq lsp-clojure-server-command '("<clojure-lsp>")
-   ;;     lsp-clojure-custom-server-command '("<path-to-clojure-language-server>"))
-       ;; lsp-clojure-server-config-files ["<path-to-clojure-lsp-config.edn>"]
-  (setq lsp-rust-server 'rust-analyzer)
-  (setq lsp-nix-executable "<rnix-lsp>")
- (setq lsp-erlang-server '("erlang-ls")
-  (setq lsp-cpp-server 'clangd)))
+    :straight t
+    :commands lsp
+    :config
+    ;; Set up LSP server executables
+    (setq lsp-clients-java-server-executable "<jdt-language-server>")
+    ;; (setq lsp-clojure-server-command '("<clojure-lsp>")
+    ;;     lsp-clojure-custom-server-command '("<path-to-clojure-language-server>"))
+    ;; lsp-clojure-server-config-files ["<path-to-clojure-lsp-config.edn>"]
+    (setq lsp-rust-server 'rust-analyzer)
+    (setq lsp-nix-executable "<rnix-lsp>")
+    (setq lsp-erlang-server '("erlang-ls")
+	  (setq lsp-cpp-server 'clangd)))
 
   (use-package lsp-ui
     :straight t
     :hook (lsp-mode . lsp-ui-mode))
 
 (use-package company
-  :ensure t
-  :hook (lsp-mode . company-mode)
-  :config
-  (setq company-minimum-prefix-length 1
-        company-idle-delay 0.0))
+    :straight t
+    :hook (lsp-mode . company-mode)
+    :config
+    (setq company-minimum-prefix-length 1
+          company-idle-delay 0.0))
 (use-package flycheck
-  :ensure t
-  :hook (lsp-mode . flycheck-mode))
+    :straight t
+    :hook (lsp-mode . flycheck-mode))
 
 (use-package tree-sitter
     :straight t
@@ -155,22 +155,59 @@
     (require 'tree-sitter-php))
 
 
+;; for Java
 (use-package lsp-java
     :straight t)
 
+(add-to-list 'auto-mode-alist '("\\.java\\'" . java-mode))
 (use-package java-mode
     :hook (java-mode . lsp-deferred)
-    (java-mode . tree-sitter-mode)
-    (java-mode . tree-sitter-hl-mode)
+    (java-mode . company-mode)
+    (java-mode . flycheck-mode)
     :config
-    (add-hook 'java-mode-hook (lambda () (add-hook 'before-save-hook #'lsp-format-buffer nil t)))
     (setq lsp-java-eldoc-enable-hover nil)
     (setq lsp-java-signature-help-enabled nil)
     (setq lsp-java-spring-boot-enabled nil)
-    (setq lsp-java-save-actions-organize-imports nil)
+    (setq lsp-java-save-actions-organize-imports nil) 
     (setq c-basic-offset 2
 	  tab-width 2
-	  indent-tabs-mode nil))
+	  indent-tabs-mode 1))
+(use-package gradle-mode
+    :load-path "/home/avondsch/.config/emacs/extra-elisp/emacs-gradle-mode/"
+    :ensure nil
+    :config
+    (gradle-mode 1)
+    (defun my-java-mode-hook ()
+      (gradle-mode 1))
+    (defun my-java-mode-exit-hook ()
+      (gradle-mode -1))
+    (add-hook 'java-mode-hook 'my-java-mode-hook)
+    (add-hook 'java-mode-hook 'my-java-mode-exit-hook))
+
+;; for C/C++
+(add-to-list 'auto-mode-alist '("\\.c\\'" . c-mode))
+(add-to-list 'auto-mode-alist '("\\.h\\'" . c-mode))
+(add-to-list 'auto-mode-alist '("\\.cpp\\'" . c-mode))
+
+(use-package c-mode
+    :hook (c-mode . lsp-deferred)
+    (c-mode . tree-sitter-mode)
+    (c-mode . company-mode)
+    (c-mode . flycheck-mode)
+    :config
+    (setq c-default-style "gnu") 
+    (setq c-basic-offset 4) ; Set the default indentation level to 4 spaces
+    (setq tab-width 4)	    ; Set the default tab width to 4 spaces
+    (electric-pair-mode 1)
+    (setq c-electric-flag t)
+    (setq c-electric-brace-placement 'always)
+    (c-toggle-hungry-state 1)
+    (subword-mode 1)
+    (define-key c-mode-base-map (kbd "RET") 'newline-and-indent) ; Insert a newline and indent
+    (define-key c-mode-base-map (kbd "C-c C-f") 'ff-find-other-file) ; Switch between header/source files
+    (define-key c-mode-base-map (kbd "C-c C-c") 'comment-or-uncomment-region))
+
+
 
 ;;projectile, magit, treemacs
 
